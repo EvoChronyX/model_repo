@@ -1,0 +1,33 @@
+stages:
+  - test
+  - build
+  - deploy
+
+# ---------------- TEST STAGE ----------------
+test_job:
+  stage: test
+  script:
+    - echo "Running basic checks..."
+    - ls
+    - echo "Test stage completed successfully"
+
+# ---------------- BUILD STAGE ----------------
+build_job:
+  stage: build
+  script:
+    - echo "Preparing files for deployment..."
+    - mkdir -p public
+    - cp index.html admin_login.html dashboard2.html book_success.html fade_success.html *.css public/
+    - echo "Build completed: files moved to public/"
+  artifacts:
+    paths:
+      - public
+
+# ---------------- DEPLOY STAGE ----------------
+pages:
+  stage: deploy
+  script:
+    - echo "Deploying to GitLab Pages..."
+  artifacts:
+    paths:
+      - public

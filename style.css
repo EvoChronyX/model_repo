@@ -1,0 +1,140 @@
+/* Reset */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f6f9;
+}
+
+/* Headings */
+h2 {
+    text-align: center;
+    color: #333;
+    margin-top: 20px;
+}
+
+/* Container */
+.container {
+    width: 80%;
+    margin: auto;
+    margin-top: 30px;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Form */
+form {
+    text-align: center;
+}
+
+input {
+    width: 250px;
+    padding: 8px;
+    margin: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Buttons */
+button {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Table */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+th {
+    background-color: #007bff;
+    color: white;
+    padding: 10px;
+}
+
+td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Alternate row color */
+/* tr:nth-child(even) {
+    background-color: #f2f2f2;
+} */
+
+/* Search box */
+.search-box {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+/* Dashboard cards */
+.card {
+    display: inline-block;
+    width: 200px;
+    padding: 15px;
+    margin: 10px;
+    background: #e9f3ff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.card h3 {
+    margin: 0;
+    color: #007bff;
+}
+
+.card p {
+    font-size: 18px;
+    margin-top: 5px;
+}
+/* Flex container for styles */
+.style-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+/* Individual style card */
+.style-card {
+    width: 200px;
+    border: 2px solid #007bff;
+    border-radius: 10px;
+    padding: 15px;
+    background: #ffffff;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: 0.3s;
+}
+
+/* Hover effect */
+.style-card:hover {
+    transform: scale(1.05);
+    border-color: #0056b3;
+}
+
+/* Style title */
+.style-card h3 {
+    margin: 10px 0;
+    color: #007bff;
+}
+
+/* Price */
+.style-card p {
+    font-size: 18px;
+    margin: 10px 0;
+}

@@ -1,0 +1,8 @@
+pages:
+  stage: deploy
+  script:
+    - mkdir -p public
+    - cp index.html admin_login.html dashboard2.html book_success.html fade_success.html *.css public/
+  artifacts:
+    paths:
+      - public
