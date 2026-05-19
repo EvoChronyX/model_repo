@@ -1,0 +1,199 @@
+# ================== SAVE FINAL GENERATED IMAGES ==================
+log("Saving final generated images...")
+
+# Generate final samples (16 images in 4x4 grid)
+with torch.no_grad():
+    final_noise = torch.randn(16, N_QUBITS).to(device)
+    final_images = generator(final_noise).view(16, 1, 8, 8).cpu().detach()
+
+fig, axes = plt.subplots(4, 4, figsize=(12, 12))
+axes = axes.flatten()
+for i in range(16):
+    axes[i].imshow(final_images[i].squeeze(), cmap='gray')
+    axes[i].axis('off')
+plt.suptitle("Generated Digits", fontsize=16)
+plt.tight_layout()
+plt.savefig(os.path.join(run_path, "final_generated.png"))
+plt.close()
+log(f"Saved final_generated.png")
+
+# Save comparison (Real vs Fake)
+with torch.no_grad():
+    real_imgs, _ = next(iter(dataloader))
+    fake_imgs = generator(torch.randn(8, N_QUBITS).to(device)).view(8, 1, 8, 8).cpu()
+
+fig, axes = plt.subplots(2, 8, figsize=(16, 4))
+for i in range(8):
+    axes[0, i].imshow(real_imgs[i].squeeze(), cmap='gray')
+    axes[0, i].axis('off')
+    axes[0, i].set_title("Real")
+    axes[1, i].imshow(fake_imgs[i].squeeze(), cmap='gray')
+    axes[1, i].axis('off')
+    axes[1, i].set_title("Fake")
+plt.suptitle("Real vs Generated Digits", fontsize=16)
+plt.tight_layout()
+plt.savefig(os.path.join(run_path, "comparison.png"))
+plt.close()
+log(f"Saved comparison.png")
+
+# ================== METRICS ==================
+log("Calculating final metrics...")
+
+def calculate_fid(real, fake):
+    real_flat = real.view(real.size(0), -1).numpy()
+    fake_flat = fake.view(fake.size(0), -1).numpy()
+    
+    mu1, sigma1 = real_flat.mean(axis=0), np.cov(real_flat, rowvar=False)
+    mu2, sigma2 = fake_flat.mean(axis=0), np.cov(fake_flat, rowvar=False)
+    
+    diff = mu1 - mu2
+    covmean = sqrtm(sigma1 @ sigma2)
+    if np.iscomplexobj(covmean):
+        covmean = covmean.real
+    
+    return float(diff @ diff + np.trace(sigma1 + sigma2 - 2 * covmean))
+
+def calculate_ssim_score(real, fake):
+    real_np = real.numpy()
+    fake_np = fake.numpy()
+    scores = []
+    for i in range(len(real_np)):
+        r = real_np[i].squeeze()
+        f = fake_np[i].squeeze()
+        scores.append(ssim(r, f, data_range=2.0))
+    return float(np.mean(scores))
+
+def calculate_diversity(images):
+    images_flat = images.view(images.size(0), -1)
+    distances = []
+    for i in range(min(100, len(images_flat))):
+        for j in range(i+1, min(100, len(images_flat))):
+            distances.append(torch.norm(images_flat[i] - images_flat[j]).item())
+    return float(np.mean(distances)) if distances else 0.0
+
+# Generate evaluation samples
+eval_samples = min(EVAL_SAMPLES_REQUESTED, len(dataset))
+log(f"Evaluating with {eval_samples} samples...")
+
+# Collect real samples
+real_samples_list = []
+for data, _ in dataloader:
+    real_samples_list.append(data)
+    if len(real_samples_list) * BATCH_SIZE >= eval_samples:
+        break
+real_batch = torch.cat(real_samples_list, dim=0)[:eval_samples]
+
+# Generate fake samples
+fake_batch_list = []
+with torch.no_grad():
+    for i in range(0, eval_samples, BATCH_SIZE):
+        current_batch = min(BATCH_SIZE, eval_samples - i)
+        noise = torch.randn(current_batch, N_QUBITS).to(device)
+        fake = generator(noise).view(current_batch, 1, 8, 8).cpu().detach()
+        fake_batch_list.append(fake)
+fake_batch = torch.cat(fake_batch_list, dim=0)[:eval_samples]
+
+# Calculate metrics
+fid_score = calculate_fid(real_batch, fake_batch)
+ssim_score = calculate_ssim_score(real_batch, fake_batch)
+div_score = calculate_diversity(fake_batch)
+
+log(f"FID: {fid_score:.4f} (lower is better)")
+log(f"SSIM: {ssim_score:.4f} (higher is better)")
+log(f"Diversity: {div_score:.4f} (higher is better)")
+
+# ================== SAVE RESULTS ==================
+# Save training curves
+if critic_losses and generator_losses:
+    fig, axes = plt.subplots(2, 2, figsize=(12, 10))
+
+    axes[0, 0].plot(critic_losses, alpha=0.7)
+    axes[0, 0].set_title("Critic Loss")
+    axes[0, 0].set_xlabel("Iteration")
+    axes[0, 0].set_ylabel("Loss")
+
+    axes[0, 1].plot(generator_losses, alpha=0.7)
+    axes[0, 1].set_title("Generator Loss")
+    axes[0, 1].set_xlabel("Iteration")
+    axes[0, 1].set_ylabel("Loss")
+
+    if wasserstein_losses:
+        axes[1, 0].plot(wasserstein_losses, alpha=0.7)
+        axes[1, 0].set_title("Wasserstein Distance")
+        axes[1, 0].set_xlabel("Iteration")
+        axes[1, 0].set_ylabel("Distance")
+
+    if gp_losses:
+        axes[1, 1].plot(gp_losses, alpha=0.7)
+        axes[1, 1].set_title("Gradient Penalty")
+        axes[1, 1].set_xlabel("Iteration")
+        axes[1, 1].set_ylabel("Penalty")
+
+    plt.tight_layout()
+    plt.savefig(os.path.join(run_path, "training_curves.png"))
+    plt.close()
+    log(f"Saved training_curves.png")
+
+# Save metrics JSON
+metrics = {
+    "run_id": run_id,
+    "config": {
+        "n_qubits": N_QUBITS,
+        "q_depth": Q_DEPTH,
+        "batch_size": BATCH_SIZE,
+        "iterations": counter,
+        "critic_steps": CRITIC_STEPS,
+        "lambda_gp": LAMBDA_GP,
+        "eval_samples": eval_samples
+    },
+    "training_metrics": {
+        "critic_loss": {
+            "min": float(np.min(critic_losses)) if critic_losses else 0,
+            "max": float(np.max(critic_losses)) if critic_losses else 0,
+            "mean": float(np.mean(critic_losses)) if critic_losses else 0,
+            "std": float(np.std(critic_losses)) if critic_losses else 0
+        },
+        "generator_loss": {
+            "min": float(np.min(generator_losses)) if generator_losses else 0,
+            "max": float(np.max(generator_losses)) if generator_losses else 0,
+            "mean": float(np.mean(generator_losses)) if generator_losses else 0,
+            "std": float(np.std(generator_losses)) if generator_losses else 0
+        },
+        "wasserstein_loss": {
+            "mean": float(np.mean(wasserstein_losses)) if wasserstein_losses else 0
+        },
+        "gradient_penalty": {
+            "mean": float(np.mean(gp_losses)) if gp_losses else 0
+        }
+    },
+    "evaluation_metrics": {
+        "FID": fid_score,
+        "SSIM": ssim_score,
+        "Diversity": div_score
+    }
+}
+
+with open(os.path.join(run_path, "metrics.json"), "w") as f:
+    json.dump(metrics, f, indent=4)
+log(f"Saved metrics.json")
+
+# Save config.txt
+with open(os.path.join(run_path, "config.txt"), "w") as f:
+    f.write("Quantum-Native WGAN Configuration\n")
+    f.write("=" * 50 + "\n")
+    f.write(f"Run ID: {run_id}\n")
+    f.write(f"n_qubits: {N_QUBITS}\n")
+    f.write(f"q_depth: {Q_DEPTH}\n")
+    f.write(f"batch_size: {BATCH_SIZE}\n")
+    f.write(f"iterations: {counter}\n")
+    f.write(f"critic_steps: {CRITIC_STEPS}\n")
+    f.write(f"lambda_gp: {LAMBDA_GP}\n")
+    f.write(f"device: {device}\n")
+    f.write("\nEvaluation Metrics:\n")
+    f.write("-" * 30 + "\n")
+    f.write(f"FID: {fid_score:.4f}\n")
+    f.write(f"SSIM: {ssim_score:.4f}\n")
+    f.write(f"Diversity: {div_score:.4f}\n")
+
+log(f"✅ Training completed! Results saved in {run_path}")
+log(f"Final metrics - FID: {fid_score:.4f}, SSIM: {ssim_score:.4f}, Diversity: {div_score:.4f}")
