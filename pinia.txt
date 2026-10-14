@@ -1,0 +1,96 @@
+
+src /  main.js
+
+import { createPinia } from 'pinia'
+import axios from 'axios'
+
+
+app.use(createPinia())
+app.use(router) 
+
+
+
+
+src / stores / EmployeeStore.js
+
+ !-----  State - (action) -----!
+
+import { defineStore } from 'pinia'
+import axios from 'axios'
+
+export const useEmployeeStore = defineStore('employee', { 
+    state: () => ({
+        employees: []
+    }),
+
+    actions: {
+        
+        async fetchEmplyees()  {
+            const res= await axios.get('localhost:8080/api/student')
+       
+          this.employees = res.data
+           },
+
+           async addemployee(employee) {
+
+            const res =  await axios.post('localhost:8000/api/students', employee)
+            this.employee.push(res.data)
+           }
+        }
+ })
+
+
+
+src  / component / AddEmployee.vue
+
+import { reactive } from 'vue'
+import { useEmployeeStore } from '../stores/employeeStore'
+
+const store = useEmployeeStore()
+
+
+const employee =   reactive({
+    name: '',
+    email: email ''
+})
+
+
+
+async function submit() {
+
+  await store.addEmployee({ ...employee })
+
+  employee.name = ''
+  employee.department = ''
+  employee.email = ''
+}
+
+
+<template>
+
+  <form @submit.prevent="submit">
+    <input v-model="employee.name" placeholder="Name" required />
+    <input v-model="employee.department" placeholder="Department" required />
+    <input v-model="employee.email" type="email" placeholder="Email" required />
+    <button>Add</button>
+  </form>
+
+</template>
+
+
+
+app.vue:
+
+
+<script setup>
+import AddEmployee from './components/AddEmployee.vue'
+import EmployeeList from './components/EmployeeList.vue'
+</script>
+
+<template>
+  <h1>Employee Management with Pinia</h1>
+
+  <AddEmployee />
+  <hr />
+  <EmployeeList />
+</template>

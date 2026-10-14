@@ -1,0 +1,128 @@
+index.html:
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whack-a-Mole</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Whack-a-Mole</h1>
+
+    <p>Score: <span id="score">0</span></p>
+    <p>Time: <span id="time">15</span> seconds</p>
+
+    <button id="start">Start Game</button>
+    <div id="grid" class="grid"></div>
+    <p id="message">Press Start Game to play!</p>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
+
+
+
+
+style.css:
+
+
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: #f2f5f9;
+    padding: 20px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 85px);
+    gap: 10px;
+    justify-content: center;
+    margin: 20px;
+}
+
+.hole {
+    height: 75px;
+    font-size: 30px;
+    background: #dce7d5;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.active {
+    background: #ffd166;
+}
+
+button {
+    padding: 10px 15px;
+    cursor: pointer;
+}
+
+
+
+
+
+
+script.js:
+
+
+let score = 0, time = 15, mole, timer;
+
+const grid = document.getElementById("grid");
+
+for (let i = 0; i < 9; i++) {
+    let b = document.createElement("button");
+    b.className = "hole";
+    b.textContent = "•";
+
+    b.onclick = () => {
+        if (i === mole && time > 0) {
+            score++;
+            document.getElementById("score").textContent = score;
+            showMole();
+        }
+    };
+
+    grid.appendChild(b);
+}
+
+function showMole() {
+    let holes = document.querySelectorAll(".hole");
+    holes.forEach(b => b.textContent = "•");
+
+    mole = Math.floor(Math.random() * 9);
+    holes[mole].textContent = " X-X";
+}
+
+function startGame() {
+    clearInterval(mole);
+    clearInterval(timer);
+
+    score = 0;
+    time = 15;
+    document.getElementById("score").textContent = score;
+    document.getElementById("time").textContent = time;
+
+    showMole();
+
+    mole = setInterval(showMole, 700);
+
+    timer = setInterval(() => {
+        document.getElementById("time").textContent = --time;
+
+        if (time === 0) {
+            clearInterval(mole);
+            clearInterval(timer);
+            mole = -1;
+            document.getElementById("message").textContent =
+                "Game Over! Score: " + score;
+        }
+    }, 1000);
+}
+
+document.getElementById("start").onclick = startGame;
