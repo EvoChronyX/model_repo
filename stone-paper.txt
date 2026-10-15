@@ -1,0 +1,50 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Stone Paper Scissors</title>
+<style>
+body{text-align:center;font-family:Arial;margin-top:60px}
+button{padding:15px;margin:10px;font-size:20px;cursor:pointer}
+</style>
+</head>
+<body>
+<h1>Stone Paper Scissors</h1>
+<h3 id="result">Choose your move!</h3>
+<p id="score">You: 0 | Computer: 0</p>
+
+<button onclick="play('Stone')">🪨 Stone</button>
+<button onclick="play('Paper')">📄 Paper</button>
+<button onclick="play('Scissors')">✂️ Scissors</button>
+
+<script>
+let userScore=0,computerScore=0;
+
+function play(user){
+let choices=['Stone','Paper','Scissors'];
+let computer=choices[Math.floor(Math.random()*3)];
+let result='';
+
+if(user===computer)
+result='Draw!';
+else if(
+(user==='Stone'&&computer==='Scissors')||
+(user==='Paper'&&computer==='Stone')||
+(user==='Scissors'&&computer==='Paper')
+){
+result='You Win!';
+userScore++;
+}else{
+result='Computer Wins!';
+computerScore++;
+}
+
+document.getElementById('result').textContent=
+'You: '+user+' | Computer: '+computer+' → '+result;
+
+document.getElementById('score').textContent=
+'You: '+userScore+' | Computer: '+computerScore;
+}
+</script>
+</body>
+</html>
