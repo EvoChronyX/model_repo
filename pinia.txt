@@ -78,6 +78,31 @@ async function submit() {
 </template>
 
 
+EmployeeList.vue :
+
+
+<script setup>
+import { onMounted } from 'vue'
+import { useEmployeeStore } from '../stores/employeeStore'
+
+const store = useEmployeeStore()
+
+onMounted(() => {
+  store.fetchEmployees()
+})
+</script>
+
+<template>
+  <h2>Employee List</h2>
+
+  <ul>
+    <li v-for="e in store.employees" :key="e.id">
+      {{ e.name }} - {{ e.department }} - {{ e.email }}
+    </li>
+  </ul>
+</template>
+
+
 
 app.vue:
 

@@ -1,5 +1,5 @@
 src / router / index.js
-
+import { RouterLink, RouterView } from 'vue-router'
 
 import HomeView from '../views/HomeView.vue'
 import EmployeeView from '../views/EmployeeView.vue'
@@ -63,3 +63,49 @@ onMounted(async () => {
     </tr>
   </table>
 </template>
+
+
+AddEmployee.vue:
+
+<script setup>
+import { reactive } from 'vue'
+import axios from 'axios'
+
+const employee = reactive({
+  name: '',
+  department: '',
+  email: ''
+})
+
+async function addEmployee() {
+  await axios.post(
+    'http://localhost:8080/api/employees',
+    employee
+  )
+
+  alert('Employee added successfully!')
+
+  employee.name = ''
+  employee.department = ''
+  employee.email = ''
+}
+</script>
+
+<template>
+  <h2>Add Employee</h2>
+
+  <form @submit.prevent="addEmployee">
+    <input v-model="employee.name" placeholder="Name" required />
+    <br /><br />
+
+    <input v-model="employee.department" placeholder="Department" required />
+    <br /><br />
+
+    <input v-model="employee.email" type="email" placeholder="Email" required />
+    <br /><br />
+
+    <button type="submit">Add Employee</button>
+  </form>
+</template>
+
+
