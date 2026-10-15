@@ -1,0 +1,245 @@
+Hey! 👋 Let's make a simple Vue.js + Vue Router + Spring Boot + MongoDB example.
+
+### What we are going to do
+
+Suppose you have two models: `Book` and `Room`.
+
+- Book page: Update a book's name.
+- Room page: Displays the book's name.
+- When you update the book, the room page should show the updated name automatically after fetching the latest data.
+
+We'll use Vue Router to navigate between pages, Axios to communicate with Spring Boot, and MongoDB to store the data.
+
+Example: If you change the book name from `Java` to `Python`, the room page should display `Python`.
+
+## 1. Spring Boot + MongoDB backend
+
+Create these files in your Spring Boot project.
+
+### `Book.java`
+
+```
+@Document("books")
+public class Book {
+    @Id
+    public String id;
+    public String name;
+}
+```
+
+### `Room.java`
+
+```
+@Document("rooms")
+public class Room {
+    @Id
+    public String id;
+    public String roomName;
+    public String bookId;
+}
+```
+
+### `BookRepository.java`
+
+```
+public interface BookRepository extends MongoRepository<Book,String> {
+}
+```
+
+### `RoomRepository.java`
+
+```
+public interface RoomRepository extends MongoRepository<Room,String> {
+}
+```
+
+### `BookController.java`
+
+```
+@RestController
+@RequestMapping("/books")
+@CrossOrigin
+public class BookController {
+    @Autowired
+    BookRepository repo;
+
+    @GetMapping("/{id}")
+    public Book getBook(@PathVariable String id) {
+        return repo.findById(id).orElseThrow();
+    }
+
+    @PutMapping("/{id}")
+    public Book updateBook(@PathVariable String id,@RequestBody Book book) {
+        book.id=id;
+        return repo.save(book);
+    }
+}
+```
+
+### `RoomController.java`
+
+```
+@RestController
+@RequestMapping("/rooms")
+@CrossOrigin
+public class RoomController {
+    @Autowired
+    RoomRepository repo;
+
+    @GetMapping("/{id}")
+    public Room getRoom(@PathVariable String id) {
+        return repo.findById(id).orElseThrow();
+    }
+}
+```
+
+### `application.properties`
+
+```
+spring.data.mongodb.uri=mongodb://localhost:27017/mydb
+server.port=8080
+```
+
+Make sure your MongoDB server is running and your project has the Spring Web and Spring Data MongoDB dependencies.
+
+## 2. Vue.js frontend
+
+Install Axios and Vue Router:
+
+```
+npm install axios vue-router
+```
+
+### `src/router.js`
+
+```
+import { createRouter, createWebHistory } from 'vue-router'
+import Book from './Book.vue'
+import Room from './Room.vue'
+
+export default createRouter({
+  history: createWebHistory(),
+  routes: [
+    { path: '/book', component: Book },
+    { path: '/room', component: Room }
+  ]
+})
+```
+
+### `src/main.js`
+
+```
+import { createApp } from 'vue'
+import App from './App.vue'
+import router from './router'
+
+createApp(App).use(router).mount('#app')
+```
+
+### `src/App.vue`
+
+```
+<template>
+  <router-link to="/book">Book</router-link> |
+  <router-link to="/room">Room</router-link>
+  <router-view />
+</template>
+```
+
+### `src/Book.vue`
+
+This page updates the book in MongoDB.
+
+```
+<script setup>
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
+
+const book = ref({ id: 'b1', name: '' })
+
+onMounted(async () => {
+  book.value = (await axios.get('http://localhost:8080/books/b1')).data
+})
+
+async function updateBook() {
+  await axios.put('http://localhost:8080/books/b1', book.value)
+  alert('Book updated!')
+}
+</script>
+
+<template>
+  <h2>Update Book</h2>
+  <input v-model="book.name">
+  <button @click="updateBook">Update</button>
+</template>
+```
+
+### `src/Room.vue`
+
+This page fetches the room and then fetches its associated book.
+
+```
+<script setup>
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
+
+const room = ref({})
+const book = ref({})
+
+onMounted(async () => {
+  room.value = (await axios.get('http://localhost:8080/rooms/r1')).data
+  book.value = (await axios.get('http://localhost:8080/books/' + room.value.bookId)).data
+})
+</script>
+
+<template>
+  <h2>Room Details</h2>
+  <p>Room: {{ room.roomName }}</p>
+  <p>Book: {{ book.name }}</p>
+</template>
+```
+
+## 3. Sample MongoDB data
+
+Insert these documents into your `mydb` database.
+
+`books` collection
+
+```
+{
+  "_id": "b1",
+  "name": "Java"
+}
+```
+
+`rooms` collection
+
+```
+{
+  "_id": "r1",
+  "roomName": "Room 101",
+  "bookId": "b1"
+}
+```
+
+## 4. How it works
+
+Book.vue
+
+Change Java → Python
+
+Axios PUT request
+
+Spring Boot → MongoDB
+
+Updates the book document
+
+Room page fetches the book again
+
+Room.vue
+
+Displays Python
+
+Important: In this simple example, the room page gets the updated name when it loads or refreshes. If the room page is already open and you update the book on another page, it will not update instantly without additional code.
+
+For an exam, remember the main idea: the Room stores `bookId`, not a separate copy of the book name. When the room needs the name, it fetches the latest book from MongoDB.
