@@ -1,9 +1,12 @@
 import java.io.IOException;
 import java.io.PrintWriter;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+
+
 
 public class CalcServlet extends HttpServlet {
 
@@ -21,3 +24,25 @@ public class CalcServlet extends HttpServlet {
         out.println("</body></html>");
     }
 }
+
+Run command:
+
+javac -cp "/opt/tomcat/lib/tomcat-servlet-api.jar" CalcServlet.java
+
+
+web.xml :
+
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app>
+
+    <servlet>
+        <servlet-name>Calculator</servlet-name>
+        <servlet-class>CalcServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>Calculator</servlet-name>
+        <servlet-url-pattern>/calculate</servlet-url-pattern>
+    </servlet-mapping>
+
+</web-app>
