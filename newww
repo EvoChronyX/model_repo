@@ -1,0 +1,44 @@
+Use MongoDB Aggregation with `$lookup` to join the `employee` and `leave` collections, filtering only `type: "vacation"`.
+
+### `EmployeeRepository.java`
+
+```
+public interface EmployeeRepository extends MongoRepository<Employee, String> {
+
+    @Aggregation(pipeline = {
+        "{ $lookup: { from: 'leave', localField: 'empId', foreignField: 'empId', as: 'leaves' } }",
+        "{ $unwind: '$leaves' }",
+        "{ $match: { 'leaves.type': 'vacation' } }",
+        "{ $project: { empId: 1, name: 1, _id: 0 } }"
+    })
+    List<Employee> findVacationEmployees();
+}
+```
+
+### `EmployeeController.java`
+
+```
+@RestController
+@RequestMapping("/employees")
+public class EmployeeController {
+
+    @Autowired
+    EmployeeRepository repo;
+
+    @GetMapping("/vacation")
+    public List<Employee> getVacationEmployees() {
+        return repo.findVacationEmployees();
+    }
+}
+```
+
+### How it works
+
+1. `$lookup` joins `employee` and `leave` using `empId`.
+2. `$unwind` separates the matching leave records.
+3. `$match` filters only `vacation` leaves.
+4. `$project` returns only `empId` and `name`.
+
+API: `GET http://localhost:8080/employees/vacation`
+
+Important: `from: 'leave'` must match the actual MongoDB collection name exactly. This returns employees with vacation leave only.
