@@ -109,7 +109,8 @@ app.vue:
 
 <script setup>
 import AddEmployee from './components/AddEmployee.vue'
-import EmployeeList from './components/EmployeeList.vue'
+import Em
+ployeeList from './components/EmployeeList.vue'
 </script>
 
 <template>
