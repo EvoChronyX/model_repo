@@ -1,0 +1,18 @@
+public class VoteServlet extends HttpServlet {
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        int age = Integer.parseInt(request.getParameter("age"));
+        response.setContentType("text/html");
+        PrintWriter out = response.getWriter();
+        
+        out.println("<html><body>");
+        if (age >= 18) {
+            out.println("<h2>You are eligible to vote.</h2>");
+        } else {
+            out.println("<h2>You are not eligible to vote yet.</h2>");
+        }
+        out.println("</body></html>");
+    }
+}

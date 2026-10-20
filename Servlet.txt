@@ -1,0 +1,48 @@
+import java.io.IOException;
+import java.io.PrintWriter;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+
+
+
+public class CalcServlet extends HttpServlet {
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        String num1 = request.getParameter("num1");
+
+        response.setContentType("text/html");
+        PrintWriter out = response.getWriter();
+        out.println("<html><body>");
+        out.println("<p>" + num1 + "</p>");
+        out.println("<p> Hello world from servlet</p>");
+        out.println("</body></html>");
+    }
+}
+
+Run command:
+
+javac -cp "/opt/tomcat/lib/tomcat-servlet-api.jar" CalcServlet.java
+
+
+web.xml :
+
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app>
+
+    <servlet>
+        <servlet-name>Calculator</servlet-name>
+        <servlet-class>CalcServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>Calculator</servlet-name>
+        <servlet-url-pattern>/calculate</servlet-url-pattern>
+    </servlet-mapping>
+
+</web-app>
