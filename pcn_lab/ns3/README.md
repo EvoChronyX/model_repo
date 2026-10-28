@@ -93,13 +93,13 @@ Run the Global Routing baseline:
 
 
 Step 2 — Run the congestion condition
-./ns3 --run "scratch/routing_demo --protocol=rip --condition=congestion"
-./ns3 --run "scratch/routing_demo --protocol=aodv --condition=congestion"
-./ns3 --run "scratch/routing_demo --protocol=global --condition=congestion"
+./ns3 run "scratch/routing_demo --protocol=rip --condition=congestion"
+./ns3 run "scratch/routing_demo --protocol=aodv --condition=congestion"
+./ns3 run "scratch/routing_demo --protocol=global --condition=congestion"
 
 Step 3 — Run the link-failure condition
-./ns3 --run "scratch/routing_demo --protocol=rip --condition=failure"
-./ns3 --run "scratch/routing_demo --protocol=aodv --condition=failure"
+./ns3 run "scratch/routing_demo --protocol=rip --condition=failure"
+./ns3 run "scratch/routing_demo --protocol=aodv --condition=failure"
 ./ns3 --run "scratch/routing_demo --protocol=global --condition=failure"
 
 
