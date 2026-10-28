@@ -3,7 +3,7 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
 import os
 
 
-os.chdir("server_files")
+os.chdir("downloads/server_files")  # give your correct server files path
 server = HTTPServer(("127.0.0.1", 8000),
                     SimpleHTTPRequestHandler)
 
